@@ -2,31 +2,31 @@
 #include "csapp.h"
 #include "sbuf.h"
 
-pthread_cond_t cond_slot;
-pthread_cond_t cond_item;
-pthread_mutex_t mutex_slot;
-pthread_mutex_t mutex_item;
+static pthread_cond_t cond_slot;
+static pthread_cond_t cond_item;
+static pthread_mutex_t mutex_slot;
+static pthread_mutex_t mutex_item;
 
 
 void sbuf_init(s_buf *s) {
-    s->buf = (int *)malloc(sizeof(int)*MAXCON);
-    s->front = s->rear = 0;
-    s->slots = 32;
-    s->items = 0;
-    s->n = 32;
+    s->buf_ = (int *)malloc(sizeof(int)*MAXCON);
+    s->front_ = s->rear_ = 0;
+    s->slots_ = 32;
+    s->items_ = 0;
+    s->n_ = 32;
 }
 
 void sbuf_insert(s_buf *s,int item) {
     pthread_mutex_lock(&mutex_slot);
-        while(s->slots == 0)
+        while(s->slots_ == 0)
             pthread_cond_wait(&cond_slot,&mutex_slot);
-    s->buf[(s->rear++)%(s->n)] = item;
-    s->slots--;
+    s->buf_[(s->rear_++)%(s->n_)] = item;
+    s->slots_--;
     pthread_mutex_unlock(&mutex_slot);
 
     pthread_mutex_lock(&mutex_item);
-    s->items++;
-    if(s->items == 1)
+    s->items_++;
+    if(s->items_ == 1)
         pthread_cond_signal(&cond_item);
     pthread_mutex_unlock(&mutex_item);
 
@@ -37,15 +37,15 @@ void sbuf_insert(s_buf *s,int item) {
 int sbuf_remove(s_buf *s) {
     int res;
     pthread_mutex_lock(&mutex_item);
-    while (s->items == 0)  
+    while (s->items_ == 0)  
         pthread_cond_wait(&cond_item,&mutex_item);
-    res = s->buf[(s->front++)%(s->n)];
-    s->items--;
+    res = s->buf_[(s->front_++)%(s->n_)];
+    s->items_--;
     pthread_mutex_unlock(&mutex_item);
 
     pthread_mutex_lock(&mutex_slot);
-    s->slots++;
-    if(s->slots == 1)
+    s->slots_++;
+    if(s->slots_ == 1)
         pthread_cond_signal(&cond_slot);
     pthread_mutex_unlock(&mutex_slot);
     return res;
@@ -53,5 +53,5 @@ int sbuf_remove(s_buf *s) {
 
 
 void sbuf_free(s_buf *s) {
-    free(s->buf);
+    free(s->buf_);
 }

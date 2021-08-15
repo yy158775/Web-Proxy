@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "cache.h"
 #include "proxy.h"
-s_buf buf;
+s_buf Sbuf;
 
 
 int main(int argc,char **argv) {
@@ -26,11 +26,11 @@ int main(int argc,char **argv) {
         pthread_create(&pthid,NULL,thread,&pid[i]);
     }    
 
-    sbuf_init(&buf);
+    sbuf_init(&Sbuf);
     while(1) {
         clientlen = sizeof(struct sockaddr_storage);
         connfd = Accept(listenfd,(SA *)&clientaddr,&clientlen);
-        sbuf_insert(&buf,connfd);
+        sbuf_insert(&Sbuf,connfd);
         Getnameinfo((SA *)&clientaddr,clientlen,hostname,MAXLINE,port,MAXLINE,0);
         printf("Accepted connection from (%s,%s)\n",hostname,port);
     }
@@ -44,7 +44,7 @@ void *thread(void *var) {
     int connfd;
     int pid = *((int *)(var));
     while(1) {
-        connfd  = sbuf_remove(&buf);
+        connfd  = sbuf_remove(&Sbuf);
         /* 处理 */
 #ifdef debug
         printf("Thread%d Get connection\n",pid);

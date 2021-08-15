@@ -6,19 +6,13 @@
 #define MAXCON 32
 
 typedef struct {
-    int *buf;
-    size_t n;
-    int front;
-    int rear;
-    int slots;
-    int items;
+    int *buf_;
+    size_t n_;
+    int front_;
+    int rear_;
+    int slots_;
+    int items_;
 }s_buf;
-
-extern pthread_cond_t cond_slot; //slot in insert function 
-extern pthread_cond_t cond_item; 
-extern pthread_mutex_t mutex_slot;
-extern pthread_mutex_t mutex_item;
-
 
 void sbuf_init(s_buf *s);
 void sbuf_insert(s_buf *s,int item);
